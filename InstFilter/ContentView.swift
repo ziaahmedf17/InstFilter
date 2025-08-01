@@ -15,6 +15,7 @@ struct ContentView: View {
     
     @State private var showingImagePicker = false
     @State private var inputImage: UIImage?
+    @State private var processedImage: UIImage?
     
     @State private var currentFilter: CIFilter = CIFilter.sepiaTone()
     let context = CIContext()
@@ -72,7 +73,7 @@ struct ContentView: View {
                 Button("Sepia Tone"){ setFilter(CIFilter.sepiaTone())}
                 Button("Unsharp Mask"){ setFilter(CIFilter.unsharpMask())}
                 Button("Vignette"){ setFilter(CIFilter.vignette())}
-                Button("Cancel", role: cancel){}
+                Button("Cancel", role: .cancel){}
             }
         }
     }
@@ -89,7 +90,17 @@ struct ContentView: View {
     
     func save()
     {
+        guard let processedImage = processedImage else { return }
+        let imageSaver = ImageSaver()
         
+        imageSaver.successHandler = {
+            print("Success")
+        }
+        imageSaver.errorHandler = {
+            print("Oops! \($0.localizedDescription)")
+        }
+        
+        imageSaver.WriteToPhotoAlbum(image: processedImage)
     }
     
     func applyProcessing()
@@ -111,6 +122,7 @@ struct ContentView: View {
         if let cgimg = context.createCGImage(outputImage, from: outputImage.extent){
             let uiImage = UIImage(cgImage: cgimg)
             image = Image(uiImage: uiImage)
+            processedImage = uiImage
         }
     }
     
